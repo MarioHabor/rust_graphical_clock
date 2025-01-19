@@ -5,23 +5,37 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use piston_window::*;
 use std::f64::consts::PI;
 
+const WINDOW_SIZE_X: u32 = 840;
+const WINDOW_SIZE_Y: u32 = 710;
+
 const CENTER_X: f64 = 420.0;
 const CENTER_Y: f64 = 360.0;
 const RADIUS_X: f64 = 320.0; // Semi-major axis
 const RADIUS_Y: f64 = 320.0; // Semi-minor axis
+
 const TEXT_OFFSET_FACTOR: f64 = 0.89;
-const HAND_LENGTH: f64 = 220.0;
+const TEXT_SIZE: u32 = 29;
+const SECONDS_HAND_LENGTH: f64 = 280.0;
+
 const LONG_LINE_LENGTH: f64 = 13.0; // Length of 5-minute markers
 const SHORT_LINE_LENGTH: f64 = 10.0; // Length of regular minute markers
-const LONG_LINE_THICKNESS: f64 = 2.6;
+const LONG_LINE_THICKNESS: f64 = 2.6; // minute makers
 const SHORT_LINE_THICKNESS: f64 = 1.2;
 
+const MINUTE_HAND_LENGTH: f64 = 255.10;
+const MINUTE_HAND_THICKNESS: f64 = 2.5;
+const HOUR_HAND_LENGTH: f64 = 160.0;
+const HOUR_HAND_THICKNESS: f64 = 4.0;
+const CLOCK_PIN_CIRCLE: f64 = 8.0;
+
+const FONT_PATH: &str = "assets/BlackRolmer-Oblique.otf";
+
 fn main() {
-    let mut window: PistonWindow = WindowSettings::new("Clock", [840, 710])
+    let mut window: PistonWindow = WindowSettings::new("Clock", [WINDOW_SIZE_X, WINDOW_SIZE_Y])
         .exit_on_esc(true)
         .build()
         .unwrap();
-    let mut glyphs = window.load_font("assets/FiraSans-Black.ttf").unwrap(); // Load a font file
+    let mut glyphs = window.load_font(FONT_PATH).unwrap(); // Load a font file
 
     while let Some(event) = window.next() {
         window.draw_2d(&event, |c, g, device| {
@@ -47,7 +61,7 @@ fn main() {
                 // Draw the hour number at calculated position
                 text(
                     [1.0, 1.0, 1.0, 1.0], // White color
-                    25,                   // Font size
+                    TEXT_SIZE,            // Font size
                     &hour.to_string(),    // Hour number as text
                     &mut glyphs,
                     c.transform.trans(x - 10.0, y + 10.0), // Adjust position slightly
@@ -63,17 +77,8 @@ fn main() {
             let seconds = current_time.as_secs() % 60;
             let angle = (seconds as f64) * (2.0 * PI / 60.0) - PI / 2.0;
             // Calculate the endpoint of the seconds hand
-            let hand_x = CENTER_X + HAND_LENGTH * angle.cos();
-            let hand_y = CENTER_Y + HAND_LENGTH * angle.sin();
-
-            // Draw the seconds hand
-            line(
-                [1.0, 0.0, 0.0, 1.0],                 // Color (red)
-                2.0,                                  // Line thickness
-                [CENTER_X, CENTER_Y, hand_x, hand_y], // Line from center to calculated endpoint
-                c.transform,
-                g,
-            );
+            let hand_x = CENTER_X + SECONDS_HAND_LENGTH * angle.cos();
+            let hand_y = CENTER_Y + SECONDS_HAND_LENGTH * angle.sin();
 
             // Draw minute markers
             for minute in 0..60 {
@@ -100,6 +105,60 @@ fn main() {
                     g,
                 );
             }
+
+            let total_seconds = current_time.as_secs();
+            let hours = (total_seconds / 3600) % 12; // Convert to hours (0-11)
+            let minutes = (total_seconds / 60) % 60; // Convert to minutes (0-59)
+
+            // Calculate angles for the hands
+            let minute_angle = (minutes as f64) * (2.0 * PI / 60.0) - PI / 2.0;
+            let hour_angle = (hours as f64) * (2.0 * PI / 12.0)
+                + (minutes as f64) * (2.0 * PI / (12.0 * 60.0))
+                - PI / 2.0;
+
+            // Minute hand
+            let minute_x = CENTER_X + MINUTE_HAND_LENGTH * minute_angle.cos();
+            let minute_y = CENTER_Y + MINUTE_HAND_LENGTH * minute_angle.sin();
+            line(
+                [1.0, 1.0, 1.0, 1.0], // White color
+                MINUTE_HAND_THICKNESS,
+                [CENTER_X, CENTER_Y, minute_x, minute_y],
+                c.transform,
+                g,
+            );
+
+            // Hour hand
+            let hour_x = CENTER_X + HOUR_HAND_LENGTH * hour_angle.cos();
+            let hour_y = CENTER_Y + HOUR_HAND_LENGTH * hour_angle.sin();
+            line(
+                [1.0, 1.0, 1.0, 1.0], // White color
+                HOUR_HAND_THICKNESS,
+                [CENTER_X, CENTER_Y, hour_x, hour_y],
+                c.transform,
+                g,
+            );
+
+            // Draw the seconds hand
+            line(
+                [1.0, 0.0, 0.0, 1.0],                 // Color (red)
+                2.0,                                  // Line thickness
+                [CENTER_X, CENTER_Y, hand_x, hand_y], // Line from center to calculated endpoint
+                c.transform,
+                g,
+            );
+
+            // Draw the small center dot
+            ellipse(
+                [0.125, 0.275, 0.631, 1.0], // White color
+                [
+                    CENTER_X - CLOCK_PIN_CIRCLE, // X-coordinate: Center minus radius
+                    CENTER_Y - CLOCK_PIN_CIRCLE, // Y-coordinate: Center minus radius
+                    2.0 * CLOCK_PIN_CIRCLE,      // Width of the dot
+                    2.0 * CLOCK_PIN_CIRCLE,      // Height of the dot
+                ],
+                c.transform,
+                g,
+            );
 
             glyphs.factory.encoder.flush(device);
         });
