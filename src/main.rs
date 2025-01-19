@@ -55,16 +55,6 @@ fn main() {
                 )
                 .unwrap();
             }
-            // Draw the hour number at calculated position
-            text(
-                [1.0, 1.0, 1.0, 1.0], // White color
-                25,                   // Font size
-                "For Ally",           // Hour number as text
-                &mut glyphs,
-                c.transform.trans(390.0, 440.0), // Adjust position slightly
-                g,
-            )
-            .unwrap();
 
             // Get the current time in seconds
             let current_time = SystemTime::now()
