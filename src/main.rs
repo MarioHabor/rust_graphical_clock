@@ -5,23 +5,23 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use piston_window::*;
 use std::f64::consts::PI;
 
+const CENTER_X: f64 = 420.0;
+const CENTER_Y: f64 = 360.0;
+const RADIUS_X: f64 = 320.0; // Semi-major axis
+const RADIUS_Y: f64 = 320.0; // Semi-minor axis
+const TEXT_OFFSET_FACTOR: f64 = 0.89;
+const HAND_LENGTH: f64 = 220.0;
+const LONG_LINE_LENGTH: f64 = 13.0; // Length of 5-minute markers
+const SHORT_LINE_LENGTH: f64 = 10.0; // Length of regular minute markers
+const LONG_LINE_THICKNESS: f64 = 2.6;
+const SHORT_LINE_THICKNESS: f64 = 1.2;
+
 fn main() {
     let mut window: PistonWindow = WindowSettings::new("Clock", [840, 710])
         .exit_on_esc(true)
         .build()
         .unwrap();
     let mut glyphs = window.load_font("assets/FiraSans-Black.ttf").unwrap(); // Load a font file
-
-    let center_x = 420.0;
-    let center_y = 360.0;
-    let radius_x = 320.0; // Semi-major axis
-    let radius_y = 320.0; // Semi-minor axis
-    let text_offset_factor = 0.89;
-    let hand_length = 220.0;
-    let long_line_length = 13.0; // Length of 5-minute markers
-    let short_line_length = 10.0; // Length of regular minute markers
-    let long_line_thickness = 2.6;
-    let short_line_thickness = 1.2;
 
     while let Some(event) = window.next() {
         window.draw_2d(&event, |c, g, device| {
@@ -31,20 +31,18 @@ fn main() {
             ellipse(
                 [0.263, 0.431, 0.839, 1.0], // Color (blue)
                 [
-                    center_x - radius_x,
-                    center_y - radius_y,
-                    2.0 * radius_x,
-                    2.0 * radius_y,
+                    CENTER_X - RADIUS_X,
+                    CENTER_Y - RADIUS_Y,
+                    2.0 * RADIUS_X,
+                    2.0 * RADIUS_Y,
                 ],
                 c.transform,
                 g,
             );
-
-            // Draw clock numbers
             for hour in 1..=12 {
                 let angle = (hour as f64) * PI / 6.0 - PI / 2.0;
-                let x = center_x + radius_x * text_offset_factor * angle.cos();
-                let y = center_y + radius_y * text_offset_factor * angle.sin();
+                let x = CENTER_X + RADIUS_X * TEXT_OFFSET_FACTOR * angle.cos();
+                let y = CENTER_Y + RADIUS_Y * TEXT_OFFSET_FACTOR * angle.sin();
 
                 // Draw the hour number at calculated position
                 text(
@@ -75,14 +73,14 @@ fn main() {
             let seconds = current_time.as_secs() % 60;
             let angle = (seconds as f64) * (2.0 * PI / 60.0) - PI / 2.0;
             // Calculate the endpoint of the seconds hand
-            let hand_x = center_x + hand_length * angle.cos();
-            let hand_y = center_y + hand_length * angle.sin();
+            let hand_x = CENTER_X + HAND_LENGTH * angle.cos();
+            let hand_y = CENTER_Y + HAND_LENGTH * angle.sin();
 
             // Draw the seconds hand
             line(
                 [1.0, 0.0, 0.0, 1.0],                 // Color (red)
                 2.0,                                  // Line thickness
-                [center_x, center_y, hand_x, hand_y], // Line from center to calculated endpoint
+                [CENTER_X, CENTER_Y, hand_x, hand_y], // Line from center to calculated endpoint
                 c.transform,
                 g,
             );
@@ -93,15 +91,15 @@ fn main() {
 
                 // Determine line length (longer for 5th minute)
                 let (line_length, line_thickness) = if minute % 5 == 0 {
-                    (long_line_length, long_line_thickness) // Long and bold for 5-minute markers
+                    (LONG_LINE_LENGTH, LONG_LINE_THICKNESS) // Long and bold for 5-minute markers
                 } else {
-                    (short_line_length, short_line_thickness) // Short and thin for regular markers
+                    (SHORT_LINE_LENGTH, SHORT_LINE_THICKNESS) // Short and thin for regular markers
                 };
                 // Calculate start and end points of the line
-                let start_x = center_x + (radius_x - line_length) * angle.cos();
-                let start_y = center_y + (radius_y - line_length) * angle.sin();
-                let end_x = center_x + radius_x * angle.cos();
-                let end_y = center_y + radius_y * angle.sin();
+                let start_x = CENTER_X + (RADIUS_X - line_length) * angle.cos();
+                let start_y = CENTER_Y + (RADIUS_Y - line_length) * angle.sin();
+                let end_x = CENTER_X + RADIUS_X * angle.cos();
+                let end_y = CENTER_Y + RADIUS_Y * angle.sin();
 
                 // Draw the line
                 line(
