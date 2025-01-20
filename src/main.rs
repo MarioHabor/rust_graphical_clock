@@ -1,4 +1,3 @@
-use piston_window::WindowSettings;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use piston_window::*;
