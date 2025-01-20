@@ -12,6 +12,7 @@ const CENTER_X: f64 = 420.0;
 const CENTER_Y: f64 = 360.0;
 const RADIUS_X: f64 = 320.0; // Semi-major axis
 const RADIUS_Y: f64 = 320.0; // Semi-minor axis
+const ARC_THICKNESS: f64 = 6.0; // Thickness of the arc
 
 const TEXT_OFFSET_FACTOR: f64 = 0.89;
 const TEXT_SIZE: u32 = 29;
@@ -40,6 +41,35 @@ fn main() {
     while let Some(event) = window.next() {
         window.draw_2d(&event, |c, g, device| {
             clear([0.1, 0.1, 0.2, 1.0], g); // Background color
+                                            // Define the bounding rectangle for the elliptical arc
+            let rect = [
+                CENTER_X - RADIUS_X, // Top-left X
+                CENTER_Y - RADIUS_Y, // Top-left Y
+                2.0 * RADIUS_X,      // Width
+                2.0 * RADIUS_Y,      // Height
+            ];
+
+            // Draw an arc around the elliptical clock
+            circle_arc(
+                [1.0, 1.0, 1.0, 1.0], // White color
+                ARC_THICKNESS,        // Line thickness
+                0.0,                  // Start angle (0 radians)
+                PI,                   // End angle (180 degrees, half-circle)
+                rect,                 // Bounding rectangle
+                c.transform,
+                g,
+            );
+
+            // Draw the second half of the elliptical arc
+            circle_arc(
+                [1.0, 1.0, 1.0, 1.0], // White color
+                ARC_THICKNESS,        // Line thickness
+                PI,                   // Start angle (180 degrees)
+                2.0 * PI,             // End angle (360 degrees)
+                rect,                 // Bounding rectangle
+                c.transform,
+                g,
+            );
 
             // Draw the ellipse (clock face)
             ellipse(
