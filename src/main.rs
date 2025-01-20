@@ -6,22 +6,17 @@ use std::f64::consts::PI;
 const WINDOW_SIZE_X: u32 = 840;
 const WINDOW_SIZE_Y: u32 = 710;
 
-// const RADIUS_X: f64 = 320.0; // Semi-major axis
-// const RADIUS_Y: f64 = 320.0; // Semi-minor axis
 const ARC_THICKNESS: f64 = 6.0; // Thickness of the arc
 
 const TEXT_OFFSET_FACTOR: f64 = 0.89;
 const TEXT_SIZE: u32 = 29;
-// const SECONDS_HAND_LENGTH: f64 = 280.0;
 
 const LONG_LINE_LENGTH: f64 = 13.0; // Length of 5-minute markers
 const SHORT_LINE_LENGTH: f64 = 10.0; // Length of regular minute markers
 const LONG_LINE_THICKNESS: f64 = 2.6; // minute makers
 const SHORT_LINE_THICKNESS: f64 = 1.2;
 
-// const MINUTE_HAND_LENGTH: f64 = 255.10;
 const MINUTE_HAND_THICKNESS: f64 = 2.5;
-// const HOUR_HAND_LENGTH: f64 = 160.0;
 const HOUR_HAND_THICKNESS: f64 = 4.0;
 const CLOCK_PIN_CIRCLE: f64 = 8.0;
 
@@ -30,7 +25,7 @@ const FONT_PATH: &str = "assets/BlackRolmer-Oblique.otf";
 fn main() {
     let mut window: PistonWindow = WindowSettings::new("Clock", [WINDOW_SIZE_X, WINDOW_SIZE_Y])
         .exit_on_esc(true)
-        .transparent(true)
+        // .transparent(true)
         .build()
         .unwrap();
     let mut glyphs = window.load_font(FONT_PATH).unwrap(); // Load a font file
