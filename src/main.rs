@@ -1,6 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use piston_window::*;
+use sqrtx::square_root;
 use std::f64::consts::PI;
 
 const WINDOW_SIZE_X: u32 = 840;
@@ -305,7 +306,8 @@ fn draw_eye(
     // Calculate pupil position based on mouse
     let mut dx = mouse_x - eye_x;
     let mut dy = mouse_y - eye_y;
-    let distance = (dx * dx + dy * dy).sqrt();
+    let distance = square_root(dx * dx + dy * dy).unwrap();
+    // let distance = (dx * dx + dy * dy).sqrt();
 
     if distance > 0.0 {
         dx /= distance; // Normalize direction vector
