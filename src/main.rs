@@ -1,5 +1,4 @@
-// use piston::event_loop::{EventSettings, Events};
-use piston::window::WindowSettings;
+use piston_window::WindowSettings;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use piston_window::*;
@@ -8,8 +7,8 @@ use std::f64::consts::PI;
 const WINDOW_SIZE_X: u32 = 840;
 const WINDOW_SIZE_Y: u32 = 710;
 
-const CENTER_X: f64 = 420.0;
-const CENTER_Y: f64 = 360.0;
+const CENTER_X: f64 = WINDOW_SIZE_X as f64 / 2.0;
+const CENTER_Y: f64 = WINDOW_SIZE_Y as f64 / 2.0;
 const RADIUS_X: f64 = 320.0; // Semi-major axis
 const RADIUS_Y: f64 = 320.0; // Semi-minor axis
 const ARC_THICKNESS: f64 = 6.0; // Thickness of the arc
