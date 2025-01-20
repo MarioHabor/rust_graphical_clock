@@ -29,6 +29,8 @@ fn main() {
         .build()
         .unwrap();
     let mut glyphs = window.load_font(FONT_PATH).unwrap(); // Load a font file
+    let mut mouse_x = 400.0; // Initialize mouse position at center
+    let mut mouse_y = 300.0;
 
     while let Some(event) = window.next() {
         let window_size = window.size();
@@ -37,9 +39,9 @@ fn main() {
 
         let mut radius_x = window_size.width / 2.0 - 100.0;
         let mut radius_y = window_size.height / 2.0 - 35.0;
-        let mut minute_hand_length = decrease_by_percentage(radius_x, 0.39631);
+        let mut minute_hand_length = decrease_by_percentage(radius_x, 0.24631);
         let mut hour_hand_length = decrease_by_percentage(radius_x, 0.409524);
-        let mut seconds_hand_length = decrease_by_percentage(radius_x, 0.266667);
+        let mut seconds_hand_length = decrease_by_percentage(radius_x, 0.1446);
         if radius_y < 320.0 || radius_x < 320.0 {
             radius_x = 320.0;
             radius_y = 320.0;
@@ -52,6 +54,15 @@ fn main() {
             minute_hand_length = 585.0;
             hour_hand_length = 500.0;
             seconds_hand_length = 670.0;
+        }
+
+        if let Some(Button::Mouse(MouseButton::Left)) = event.press_args() {
+            // Play sound on click
+        }
+
+        if let Some(pos) = event.mouse_cursor_args() {
+            mouse_x = pos[0];
+            mouse_y = pos[1];
         }
 
         window.draw_2d(&event, |c, g, device| {
@@ -122,7 +133,7 @@ fn main() {
                 .duration_since(UNIX_EPOCH)
                 .expect("Time went backwards");
             let seconds = current_time.as_secs() % 60;
-            let angle = (seconds as f64) * (2.0 * PI / 60.0) - PI / 2.0;
+            // let angle = (seconds as f64) * (2.0 * PI / 60.0) - PI / 2.0;
 
             // Draw minute markers
             for minute in 0..60 {
@@ -155,48 +166,46 @@ fn main() {
             let minutes = (total_seconds / 60) % 60; // Convert to minutes (0-59)
 
             // Calculate angles for the hands
-            let minute_angle = (minutes as f64) * (2.0 * PI / 60.0) - PI / 2.0;
-            let hour_angle = (hours as f64) * (2.0 * PI / 12.0)
-                + (minutes as f64) * (2.0 * PI / (12.0 * 60.0))
-                - PI / 2.0;
-
-            // Minute hand
-            let minute_x = center_x + minute_hand_length * minute_angle.cos();
-            let minute_y = center_y + minute_hand_length * minute_angle.sin();
-            line(
-                [1.0, 1.0, 1.0, 1.0], // White color
-                MINUTE_HAND_THICKNESS,
-                [center_x, center_y, minute_x, minute_y],
-                c.transform,
-                g,
-            );
-
-            // Hour hand
-            let hour_x = center_x + hour_hand_length * hour_angle.cos();
-            let hour_y = center_y + hour_hand_length * hour_angle.sin();
-            line(
-                [1.0, 1.0, 1.0, 1.0], // White color
+            let hour_angle = calculate_angle(hours, 12, std::f64::consts::PI / 2.0)
+                + calculate_angle(minutes, 60, 0.0) / 12.0; // Adjust for minute offset
+            let minute_angle = calculate_angle(minutes, 60, std::f64::consts::PI / 2.0);
+            let second_angle = calculate_angle(seconds, 60, std::f64::consts::PI / 2.0);
+            // Draw the hands
+            draw_hand(
+                center_x,
+                center_y,
+                hour_hand_length,
+                hour_angle,
                 HOUR_HAND_THICKNESS,
-                [center_x, center_y, hour_x, hour_y],
-                c.transform,
+                [1.0, 1.0, 1.0, 1.0], // White
+                c,
                 g,
             );
 
-            // Draw the seconds hand
-            // Calculate the endpoint of the seconds hand
-            let hand_x = center_x + seconds_hand_length * angle.cos();
-            let hand_y = center_y + seconds_hand_length * angle.sin();
-            line(
-                [1.0, 0.0, 0.0, 1.0],                 // Color (red)
-                2.0,                                  // Line thickness
-                [center_x, center_y, hand_x, hand_y], // Line from center to calculated endpoint
-                c.transform,
+            draw_hand(
+                center_x,
+                center_y,
+                minute_hand_length,
+                minute_angle,
+                MINUTE_HAND_THICKNESS,
+                [1.0, 1.0, 1.0, 1.0], // White
+                c,
                 g,
             );
 
+            draw_hand(
+                center_x,
+                center_y,
+                seconds_hand_length,
+                second_angle,
+                2.0,                  // Thickness for seconds hand
+                [1.0, 0.0, 0.0, 1.0], // Red
+                c,
+                g,
+            );
             // Draw the small center dot
             ellipse(
-                [0.125, 0.275, 0.631, 1.0], // White color
+                [0.125, 0.275, 0.631, 1.0],
                 [
                     center_x - CLOCK_PIN_CIRCLE, // X-coordinate: Center minus radius
                     center_y - CLOCK_PIN_CIRCLE, // Y-coordinate: Center minus radius
@@ -204,6 +213,32 @@ fn main() {
                     2.0 * CLOCK_PIN_CIRCLE,      // Height of the dot
                 ],
                 c.transform,
+                g,
+            );
+
+            // Draw the left eye
+            draw_eye(
+                center_x - 100.0, // Left eye X offset
+                center_y - 150.0,
+                mouse_x,
+                mouse_y,
+                50.0, // Eye horizontal radius
+                30.0, // Eye vertical radius
+                10.0, // Pupil radius
+                c,
+                g,
+            );
+
+            // Draw the right eye
+            draw_eye(
+                center_x + 100.0, // Right eye X offset
+                center_y - 150.0,
+                mouse_x,
+                mouse_y,
+                50.0, // Eye horizontal radius
+                30.0, // Eye vertical radius
+                10.0, // Pupil radius
+                c,
                 g,
             );
 
@@ -215,4 +250,82 @@ fn main() {
 fn decrease_by_percentage(og_val: f64, percentage: f64) -> f64 {
     // println!("{}", og_val * (1.0 - percentage));
     og_val * (1.0 - percentage)
+}
+
+fn calculate_angle(value: u64, max_value: u64, offset: f64) -> f64 {
+    (value as f64) * (2.0 * std::f64::consts::PI / max_value as f64) - offset
+}
+
+fn draw_hand(
+    center_x: f64,
+    center_y: f64,
+    length: f64,
+    angle: f64,
+    thickness: f64,
+    color: [f32; 4],
+    c: Context,
+    g: &mut G2d,
+) {
+    let hand_x = center_x + length * angle.cos();
+    let hand_y = center_y + length * angle.sin();
+    line(
+        color,
+        thickness,
+        [center_x, center_y, hand_x, hand_y], // Line from center to endpoint
+        c.transform,
+        g,
+    );
+}
+
+// Function to draw an eye with a pupil
+fn draw_eye(
+    eye_x: f64,
+    eye_y: f64,
+    mouse_x: f64,
+    mouse_y: f64,
+    eye_radius_x: f64,
+    eye_radius_y: f64,
+    pupil_radius: f64,
+    c: Context,
+    g: &mut G2d,
+) {
+    // Draw the eye (oval)
+    ellipse(
+        [0.0, 0.0, 0.0, 1.0], // Black color
+        [
+            eye_x - eye_radius_x,
+            eye_y - eye_radius_y,
+            2.0 * eye_radius_x,
+            2.0 * eye_radius_y,
+        ],
+        c.transform,
+        g,
+    );
+
+    // Calculate pupil position based on mouse
+    let mut dx = mouse_x - eye_x;
+    let mut dy = mouse_y - eye_y;
+    let distance = (dx * dx + dy * dy).sqrt();
+
+    if distance > 0.0 {
+        dx /= distance; // Normalize direction vector
+        dy /= distance;
+    }
+
+    // Constrain pupil within the eye
+    let pupil_x = eye_x + eye_radius_x * 0.6 * dx;
+    let pupil_y = eye_y + eye_radius_y * 0.6 * dy;
+
+    // Draw the pupil
+    ellipse(
+        [1.0, 1.0, 1.0, 1.0], // White color
+        [
+            pupil_x - pupil_radius,
+            pupil_y - pupil_radius,
+            2.0 * pupil_radius,
+            2.0 * pupil_radius,
+        ],
+        c.transform,
+        g,
+    );
 }
